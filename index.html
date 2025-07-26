@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Моя Копилка</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .balance {
+            font-size: 36px;
+            text-align: center;
+            margin: 20px 0;
+            color: #2c3e50;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            background: #27ae60;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        button.spend {
+            background: #e74c3c;
+        }
+        button.goal {
+            background: #3498db;
+        }
+        .history-item {
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .income {
+            color: #27ae60;
+        }
+        .expense {
+            color: #e74c3c;
+        }
+        .goal-container {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        .progress-container {
+            margin: 15px 0;
+        }
+        .progress-bar {
+            height: 20px;
+            background: #ecf0f1;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .progress {
+            height: 100%;
+            background: #2ecc71;
+            width: 0%;
+            transition: width 0.5s;
+        }
+        .goal-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>Моя Копилка</h2>
+        <div class="balance" id="balance">0 UZS</div>
+        
+        <input type="number" id="amount" placeholder="Сумма пополнения">
+        <button id="add">Добавить</button>
+        
+        <input type="number" id="spendAmount" placeholder="Сумма расхода">
+        <button id="spend" class="spend">Потратить</button>
+        
+        <div class="goal-container">
+            <h3>Цель накоплений</h3>
+            <div id="goalText">Не установлена</div>
+            
+            <div class="progress-container">
+                <div class="goal-info">
+                    <span id="progressPercent">0%</span>
+                    <span id="remainingAmount"></span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress" id="progress"></div>
+                </div>
+            </div>
+            
+            <input type="number" id="goalAmount" placeholder="Укажите цель в UZS">
+            <button id="setGoal" class="goal">Установить цель</button>
+        </div>
+    </div>
+    
+    <div class="card">
+        <h3>История операций</h3>
+        <div id="historyList">
+            <p style="text-align: center; color: #999;">Нет операций</p>
+        </div>
+    </div>
+
+    <script>
+        // Проверяем, есть ли сохраненные данные
+        let balance = parseFloat(localStorage.getItem('balance')) || 0;
+        let history = JSON.parse(localStorage.getItem('history')) || [];
+        let goal = parseFloat(localStorage.getItem('goal')) || 0;
+        
+        // Обновляем интерфейс
+        updateBalance();
+        updateGoal();
+        renderHistory();
+        
+        // Назначаем обработчики событий
+        document.getElementById('add').addEventListener('click', addMoney);
+        document.getElementById('spend').addEventListener('click', spendMoney);
+        document.getElementById('setGoal').addEventListener('click', setGoal);
+        
+        // Обработка нажатия Enter
+        document.getElementById('amount').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') addMoney();
+        });
+        document.getElementById('spendAmount').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') spendMoney();
+        });
+        document.getElementById('goalAmount').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') setGoal();
+        });
+        
+        function addMoney() {
+            const amount = parseFloat(document.getElementById('amount').value);
+            if (!amount || amount <= 0) {
+                alert('Введите корректную сумму');
+                return;
+            }
+            
+            balance = parseFloat(balance) + amount;
+            saveData();
+            
+            // Добавляем в историю
+            history.push({
+                type: 'income',
+                amount: amount,
+                date: new Date()
+            });
+            saveHistory();
+            
+            updateBalance();
+            updateGoal();
+            document.getElementById('amount').value = '';
+            renderHistory();
+        }
+        
+        function spendMoney() {
+            const amount = parseFloat(document.getElementById('spendAmount').value);
+            if (!amount || amount <= 0) {
+                alert('Введите корректную сумму');
+                return;
+            }
+            
+            if (amount > balance) {
+                alert('Недостаточно средств');
+                return;
+            }
+            
+            balance -= amount;
+            saveData();
+            
+            // Добавляем в историю
+            history.push({
+                type: 'expense',
+                amount: amount,
+                date: new Date()
+            });
+            saveHistory();
+            
+            updateBalance();
+            updateGoal();
+            document.getElementById('spendAmount').value = '';
+            renderHistory();
+        }
+        
+        function setGoal() {
+            const amount = parseFloat(document.getElementById('goalAmount').value);
+            if (!amount || amount <= 0) {
+                alert('Введите корректную сумму цели');
+                return;
+            }
+            
+            goal = amount;
+            localStorage.setItem('goal', goal);
+            updateGoal();
+            document.getElementById('goalAmount').value = '';
+        }
+        
+        function updateBalance() {
+            document.getElementById('balance').textContent = balance.toFixed(2) + ' UZS';
+        }
+        
+        function updateGoal() {
+            const goalElement = document.getElementById('goalText');
+            const progressElement = document.getElementById('progress');
+            const percentElement = document.getElementById('progressPercent');
+            const remainingElement = document.getElementById('remainingAmount');
+            
+            if (goal > 0) {
+                const progress = Math.min(100, (balance / goal) * 100);
+                const remaining = Math.max(0, goal - balance);
+                
+                goalElement.textContent = goal.toFixed(2) + ' UZS';
+                progressElement.style.width = progress + '%';
+                percentElement.textContent = progress.toFixed(1) + '%';
+                remainingElement.textContent = 'Осталось: ' + remaining.toFixed(2) + ' UZS';
+            } else {
+                goalElement.textContent = 'Не установлена';
+                progressElement.style.width = '0%';
+                percentElement.textContent = '0%';
+                remainingElement.textContent = '';
+            }
+        }
+        
+        function renderHistory() {
+            const historyList = document.getElementById('historyList');
+            
+            if (history.length === 0) {
+                historyList.innerHTML = '<p style="text-align: center; color: #999;">Нет операций</p>';
+                return;
+            }
+            
+            historyList.innerHTML = '';
+            
+            // Показываем последние 10 операций в обратном порядке
+            history.slice(-10).reverse().forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'history-item';
+                div.innerHTML = `
+                    <span class="${item.type === 'income' ? 'income' : 'expense'}">
+                        ${item.type === 'income' ? '+' : '-'}${item.amount.toFixed(2)} UZS
+                    </span>
+                    <span style="float: right; color: #999;">
+                        ${new Date(item.date).toLocaleString()}
+                    </span>
+                `;
+                historyList.appendChild(div);
+            });
+        }
+        
+        function saveData() {
+            localStorage.setItem('balance', balance);
+        }
+        
+        function saveHistory() {
+            localStorage.setItem('history', JSON.stringify(history));
+        }
+    </script>
+</body>
+</html>
