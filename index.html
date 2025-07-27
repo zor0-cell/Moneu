@@ -3,279 +3,1859 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Моя Копилка</title>
-        <link rel="stylesheet" href="https://www.vecteezy.com/vector-art/3765626-open-hand-with-dollar-glyph-icon-silhouette-symbol-saving-money-negative-space-vector-isolated-illustration">
+    <title>Умная Копилка</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f5f5f5;
+        /* Неоморфные стили */
+        .neumorphic {
+            background: #e0e5ec;
+            border-radius: 20px;
+            box-shadow: 
+                8px 8px 15px rgba(163, 177, 198, 0.7),
+                -8px -8px 15px rgba(255, 255, 255, 0.8);
+            transition: all 0.3s ease;
         }
-        .card {
-            background: white;
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        
+        .neumorphic-inset {
+            background: #e0e5ec;
+            border-radius: 20px;
+            box-shadow: 
+                inset 3px 3px 5px rgba(163, 177, 198, 0.7),
+                inset -3px -3px 5px rgba(255, 255, 255, 0.8);
         }
-        .balance {
-            font-size: 36px;
-            text-align: center;
-            margin: 20px 0;
-            color: #2c3e50;
+        
+        .neumorphic-btn {
+            background: #e0e5ec;
+            border-radius: 12px;
+            box-shadow: 
+                4px 4px 8px rgba(163, 177, 198, 0.6),
+                -4px -4px 8px rgba(255, 255, 255, 0.8);
+            transition: all 0.2s ease;
         }
-        input {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
+        
+        .neumorphic-btn:hover {
+            box-shadow: 
+                2px 2px 4px rgba(163, 177, 198, 0.6),
+                -2px -2px 4px rgba(255, 255, 255, 0.8);
         }
-        button {
-            width: 100%;
-            padding: 10px;
-            border: none;
-            border-radius: 5px;
-            background: #27ae60;
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
+        
+        .neumorphic-btn:active {
+            box-shadow: 
+                inset 2px 2px 4px rgba(163, 177, 198, 0.6),
+                inset -2px -2px 4px rgba(255, 255, 255, 0.8);
         }
-        button.spend {
-            background: #e74c3c;
+        
+        /* 3D карточки */
+        .goal-card {
+            transform-style: preserve-3d;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            perspective: 1000px;
+            transform: translateZ(0);
         }
-        button.goal {
-            background: #3498db;
+        
+        .goal-card:hover {
+            transform: translateY(-5px) rotateX(3deg) scale(1.02);
+            box-shadow: 
+                15px 15px 30px rgba(163, 177, 198, 0.8),
+                -15px -15px 30px rgba(255, 255, 255, 0.8);
         }
-        .history-item {
-            padding: 10px 0;
-            border-bottom: 1px solid #eee;
+        
+        .goal-card-content {
+            backface-visibility: hidden;
+            transform: translateZ(20px);
         }
-        .income {
-            color: #27ae60;
+        
+        /* Градиенты */
+        .gradient-bg {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ed 100%);
         }
-        .expense {
-            color: #e74c3c;
+        
+        .primary-gradient {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
-        .goal-container {
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 1px solid #eee;
+        
+        .success-gradient {
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
         }
-        .progress-container {
-            margin: 15px 0;
+        
+        .warning-gradient {
+            background: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%);
         }
-        .progress-bar {
-            height: 20px;
-            background: #ecf0f1;
-            border-radius: 10px;
-            overflow: hidden;
+        
+        .danger-gradient {
+            background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
         }
-        .progress {
-            height: 100%;
-            background: #2ecc71;
-            width: 0%;
-            transition: width 0.5s;
+        
+        /* Анимации */
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
         }
-        .goal-info {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 5px;
-            font-size: 14px;
+        
+        .floating {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        /* Тёмная тема */
+        .dark .neumorphic {
+            background: #2d3748;
+            box-shadow: 
+                8px 8px 15px rgba(0, 0, 0, 0.5),
+                -8px -8px 15px rgba(74, 85, 104, 0.5);
+        }
+        
+        .dark .neumorphic-inset {
+            background: #2d3748;
+            box-shadow: 
+                inset 3px 3px 5px rgba(0, 0, 0, 0.5),
+                inset -3px -3px 5px rgba(74, 85, 104, 0.5);
+        }
+        
+        .dark .neumorphic-btn {
+            background: #2d3748;
+            box-shadow: 
+                4px 4px 8px rgba(0, 0, 0, 0.5),
+                -4px -4px 8px rgba(74, 85, 104, 0.5);
+        }
+        
+        .dark .gradient-bg {
+            background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+        }
+        
+        .dark .text-gray-800 {
+            color: #e2e8f0;
+        }
+        
+        .dark .text-gray-500 {
+            color: #a0aec0;
+        }
+        
+        /* Иконки */
+        .icon {
+            width: 1.25rem;
+            height: 1.25rem;
+            margin-right: 0.5rem;
+        }
+        
+        .icon-lg {
+            width: 1.5rem;
+            height: 1.5rem;
+            margin-right: 0.75rem;
+        }
+        
+        .icon-xl {
+            width: 2rem;
+            height: 2rem;
+            margin-right: 1rem;
         }
     </style>
 </head>
-<body>
-    <div class="card">
-        <h2>Моя Копилка</h2>
-        <div class="balance" id="balance">0 UZS</div>
-        
-        <input type="number" id="amount" placeholder="Сумма пополнения">
-        <button id="add">Добавить</button>
-        
-        <input type="number" id="spendAmount" placeholder="Сумма расхода">
-        <button id="spend" class="spend">Потратить</button>
-        
-        <div class="goal-container">
-            <h3>Цель накоплений</h3>
-            <div id="goalText">Не установлена</div>
+<body class="gradient-bg text-gray-800 font-sans min-h-screen transition-colors duration-300" id="app-body">
+    <!-- Модалка для ввода PIN -->
+    <div id="pinEntryModal" class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50" style="display: none;">
+        <div class="neumorphic p-8 rounded-2xl w-full max-w-md">
+            <div class="text-center mb-6">
+                <i class="fas fa-lock icon-xl text-indigo-600 mb-3"></i>
+                <h2 class="text-2xl font-bold">Введите PIN-код</h2>
+            </div>
+            <input id="pinInput" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="4 цифры" 
+                   class="w-full p-4 mb-4 neumorphic-inset rounded-xl text-center text-xl" aria-label="PIN-код">
+            <p id="pinError" class="text-red-600 mb-4 hidden text-center"></p>
+            <div class="grid grid-cols-3 gap-3 mb-6">
+                <button onclick="appendPin('1')" class="neumorphic-btn p-4 rounded-xl text-xl hover:scale-105 transition-transform">
+                    <i class="fas fa-1"></i>
+                </button>
+                <button onclick="appendPin('2')" class="neumorphic-btn p-4 rounded-xl text-xl hover:scale-105 transition-transform">
+                    <i class="fas fa-2"></i>
+                </button>
+                <button onclick="appendPin('3')" class="neumorphic-btn p-4 rounded-xl text-xl hover:scale-105 transition-transform">
+                    <i class="fas fa-3"></i>
+                </button>
+                <button onclick="appendPin('4')" class="neumorphic-btn p-4 rounded-xl text-xl hover:scale-105 transition-transform">
+                    <i class="fas fa-4"></i>
+                </button>
+                <button onclick="appendPin('5')" class="neumorphic-btn p-4 rounded-xl text-xl hover:scale-105 transition-transform">
+                    <i class="fas fa-5"></i>
+                </button>
+                <button onclick="appendPin('6')" class="neumorphic-btn p-4 rounded-xl text-xl hover:scale-105 transition-transform">
+                    <i class="fas fa-6"></i>
+                </button>
+                <button onclick="appendPin('7')" class="neumorphic-btn p-4 rounded-xl text-xl hover:scale-105 transition-transform">
+                    <i class="fas fa-7"></i>
+                </button>
+                <button onclick="appendPin('8')" class="neumorphic-btn p-4 rounded-xl text-xl hover:scale-105 transition-transform">
+                    <i class="fas fa-8"></i>
+                </button>
+                <button onclick="appendPin('9')" class="neumorphic-btn p-4 rounded-xl text-xl hover:scale-105 transition-transform">
+                    <i class="fas fa-9"></i>
+                </button>
+                <button onclick="appendPin('0')" class="neumorphic-btn p-4 rounded-xl text-xl hover:scale-105 transition-transform col-span-2">
+                    <i class="fas fa-0"></i>
+                </button>
+                <button onclick="clearPin()" class="neumorphic-btn p-4 rounded-xl text-xl hover:scale-105 transition-transform bg-red-100 text-red-600">
+                    <i class="fas fa-eraser"></i>
+                </button>
+            </div>
+            <div class="flex justify-center">
+                <button onclick="verifyPin()" class="neumorphic-btn px-8 py-3 rounded-xl text-white primary-gradient hover:shadow-lg transition-all">
+                    <i class="fas fa-sign-in-alt icon"></i> Войти
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модалка для установки PIN -->
+    <div id="pinSetupModal" class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50" style="display: none;">
+        <div class="neumorphic p-8 rounded-2xl w-full max-w-md">
+            <div class="text-center mb-6">
+                <i class="fas fa-key icon-xl text-indigo-600 mb-3"></i>
+                <h2 class="text-2xl font-bold">Установите PIN-код</h2>
+            </div>
+            <input id="pinSetupInput" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="4 цифры" 
+                   class="w-full p-4 mb-3 neumorphic-inset rounded-xl text-center text-xl">
+            <input id="pinConfirmInput" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="Подтвердите PIN" 
+                   class="w-full p-4 mb-4 neumorphic-inset rounded-xl text-center text-xl">
+            <p id="pinSetupError" class="text-red-600 mb-4 hidden text-center"></p>
+            <div class="flex justify-center space-x-4">
+                <button onclick="closeModal('pinSetupModal')" class="neumorphic-btn px-6 py-3 rounded-xl hover:shadow-lg transition-all">
+                    <i class="fas fa-times icon"></i> Отмена
+                </button>
+                <button onclick="setPin()" class="neumorphic-btn px-6 py-3 rounded-xl text-white primary-gradient hover:shadow-lg transition-all">
+                    <i class="fas fa-save icon"></i> Сохранить
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Основное приложение -->
+    <div id="app" class="container mx-auto p-4 max-w-6xl hidden">
+        <!-- Навигация -->
+        <nav class="neumorphic p-4 mb-8 sticky top-4 z-10">
+            <ul class="flex flex-wrap justify-center gap-2 md:gap-4">
+                <li><button onclick="showPage('home')" class="neumorphic-btn px-4 py-2 md:px-6 md:py-3 text-indigo-600 font-medium flex items-center">
+                    <i class="fas fa-home icon"></i> Главная
+                </button></li>
+                <li><button onclick="showPage('goals')" class="neumorphic-btn px-4 py-2 md:px-6 md:py-3 text-indigo-600 font-medium flex items-center">
+                    <i class="fas fa-bullseye icon"></i> Цели
+                </button></li>
+                <li><button onclick="showPage('statistics')" class="neumorphic-btn px-4 py-2 md:px-6 md:py-3 text-indigo-600 font-medium flex items-center">
+                    <i class="fas fa-chart-bar icon"></i> Статистика
+                </button></li>
+                <li><button onclick="toggleDarkMode()" class="neumorphic-btn px-4 py-2 md:px-6 md:py-3 text-indigo-600 font-medium flex items-center">
+                    <i id="darkModeIcon" class="fas fa-sun icon"></i> Тема
+                </button></li>
+            </ul>
+        </nav>
+
+        <!-- Главная страница -->
+        <div id="home" class="page">
+            <div class="text-center mb-10">
+                <i class="fas fa-piggy-bank icon-xl text-indigo-600 mb-4"></i>
+                <h1 class="text-4xl font-bold mb-4 text-transparent bg-clip-text primary-gradient">Умная Копилка</h1>
+                <p class="text-lg text-gray-600 max-w-2xl mx-auto">Достигайте финансовых целей с современным помощником. Отслеживайте прогресс в 3D-стиле.</p>
+            </div>
             
-            <div class="progress-container">
-                <div class="goal-info">
-                    <span id="progressPercent">0%</span>
-                    <span id="remainingAmount"></span>
-                </div>
-                <div class="progress-bar">
-                    <div class="progress" id="progress"></div>
+            <!-- Общий прогресс -->
+            <div class="neumorphic p-6 md:p-8 mb-10 rounded-2xl">
+                <h2 class="text-2xl font-semibold mb-6 text-center flex items-center justify-center">
+                    <i class="fas fa-chart-pie icon-lg mr-2"></i> Общий прогресс
+                </h2>
+                <canvas id="progressChart" class="w-full h-64 md:h-80"></canvas>
+            </div>
+            
+            <!-- Последние цели -->
+            <div class="mb-10">
+                <h2 class="text-2xl font-semibold mb-6 text-center flex items-center justify-center">
+                    <i class="fas fa-star icon-lg mr-2"></i> Ваши цели
+                </h2>
+                <div id="goalsPreview" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Динамически заполняется JavaScript -->
                 </div>
             </div>
             
-            <input type="number" id="goalAmount" placeholder="Укажите цель в UZS">
-            <button id="setGoal" class="goal">Установить цель</button>
+            <!-- Достижения -->
+            <div class="neumorphic p-6 md:p-8 mb-10 rounded-2xl">
+                <h2 class="text-2xl font-semibold mb-6 text-center flex items-center justify-center">
+                    <i class="fas fa-trophy icon-lg mr-2"></i> Достижения
+                </h2>
+                <div id="achievementsList" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <!-- Динамически заполняется JavaScript -->
+                </div>
+            </div>
+            
+            <!-- Быстрые действия -->
+            <div class="text-center space-x-3 space-y-3 sm:space-y-0">
+                <button onclick="openAddContributionModal()" class="neumorphic-btn px-6 py-3 text-white primary-gradient rounded-xl hover:shadow-lg transition-all inline-flex items-center">
+                    <i class="fas fa-plus-circle icon"></i> Добавить взнос
+                </button>
+                <button onclick="openAddGoalModal()" class="neumorphic-btn px-6 py-3 text-white success-gradient rounded-xl hover:shadow-lg transition-all inline-flex items-center">
+                    <i class="fas fa-plus icon"></i> Новая цель
+                </button>
+                <button onclick="openSettingsModal()" class="neumorphic-btn px-6 py-3 text-gray-700 rounded-xl hover:shadow-lg transition-all inline-flex items-center">
+                    <i class="fas fa-cog icon"></i> Настройки
+                </button>
+            </div>
         </div>
-    </div>
-    
-    <div class="card">
-        <h3>История операций</h3>
-        <div id="historyList">
-            <p style="text-align: center; color: #999;">Нет операций</p>
+
+        <!-- Страница целей -->
+        <div id="goals" class="page hidden">
+            <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+                <h1 class="text-3xl font-bold text-transparent bg-clip-text primary-gradient flex items-center">
+                    <i class="fas fa-bullseye icon-lg mr-2"></i> Ваши цели
+                </h1>
+                <div class="flex space-x-3">
+                    <button onclick="openAddGoalModal()" class="neumorphic-btn px-6 py-3 text-white primary-gradient rounded-xl hover:shadow-lg transition-all flex items-center">
+                        <i class="fas fa-plus icon"></i> Новая цель
+                    </button>
+                    <button onclick="showPage('home')" class="neumorphic-btn px-6 py-3 rounded-xl hover:shadow-lg transition-all flex items-center">
+                        <i class="fas fa-home icon"></i> На главную
+                    </button>
+                </div>
+            </div>
+            
+            <div id="goalsList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Динамически заполняется JavaScript -->
+            </div>
+            
+            <div class="mt-10 text-center" id="emptyGoalsMessage" style="display: none;">
+                <div class="neumorphic p-8 rounded-2xl inline-block">
+                    <i class="fas fa-folder-open icon-xl text-gray-400 mb-4"></i>
+                    <h3 class="text-xl font-semibold mb-2">У вас пока нет целей</h3>
+                    <p class="text-gray-500 mb-4">Создайте свою первую цель и начните копить!</p>
+                    <button onclick="openAddGoalModal()" class="neumorphic-btn px-6 py-3 text-white primary-gradient rounded-xl hover:shadow-lg transition-all">
+                        <i class="fas fa-plus icon"></i> Создать цель
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Детали цели -->
+        <div id="goalDetails" class="page hidden">
+            <button onclick="showPage('goals')" class="neumorphic-btn px-4 py-2 mb-6 rounded-xl hover:shadow-lg transition-all flex items-center">
+                <i class="fas fa-arrow-left icon"></i> Назад к целям
+            </button>
+            
+            <div class="neumorphic p-6 md:p-8 rounded-2xl mb-6">
+                <h1 id="goalDetailsTitle" class="text-3xl font-bold mb-4 text-center text-transparent bg-clip-text primary-gradient flex items-center justify-center">
+                    <i class="fas fa-bullseye icon-lg mr-2"></i>
+                </h1>
+                
+                <div class="flex flex-col lg:flex-row gap-6 mb-6">
+                    <div class="lg:w-1/2">
+                        <img id="goalDetailsImage" class="w-full h-48 md:h-64 object-cover rounded-xl mb-4 goal-card" alt="Изображение цели">
+                    </div>
+                    <div class="lg:w-1/2">
+                        <p id="goalDetailsDescription" class="text-gray-600 mb-6"></p>
+                        
+                        <div class="neumorphic-inset p-4 rounded-xl mb-4">
+                            <div class="flex items-center mb-4">
+                                <i class="fas fa-info-circle text-indigo-600 mr-2"></i>
+                                <h3 class="text-lg font-semibold">Информация о цели</h3>
+                            </div>
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-gray-500 flex items-center">
+                                    <i class="fas fa-bullseye mr-2"></i> Целевая сумма:
+                                </span>
+                                <span id="goalDetailsTarget" class="font-semibold"></span>
+                            </div>
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-gray-500 flex items-center">
+                                    <i class="fas fa-coins mr-2"></i> Накоплено:
+                                </span>
+                                <span id="goalDetailsCurrent" class="font-semibold"></span>
+                            </div>
+                            <div class="flex justify-between items-center mb-4">
+                                <span class="text-gray-500 flex items-center">
+                                    <i class="fas fa-chart-line mr-2"></i> Прогресс:
+                                </span>
+                                <span id="goalDetailsProgress" class="font-semibold"></span>
+                            </div>
+                            <div class="neumorphic-inset h-3 rounded-full mb-2">
+                                <div id="goalProgressBar" class="h-full rounded-full primary-gradient"></div>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-500 flex items-center">
+                                    <i class="fas fa-calendar-alt mr-2"></i> Срок:
+                                </span>
+                                <span id="goalDetailsDeadline" class="font-semibold"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div class="neumorphic p-4 rounded-xl">
+                        <h2 class="text-xl font-semibold mb-4 text-center flex items-center justify-center">
+                            <i class="fas fa-chart-line icon mr-2"></i> Прогресс
+                        </h2>
+                        <canvas id="goalProgressChart" class="w-full h-48"></canvas>
+                    </div>
+                    <div class="neumorphic p-4 rounded-xl">
+                        <h2 class="text-xl font-semibold mb-4 text-center flex items-center justify-center">
+                            <i class="fas fa-history icon mr-2"></i> История
+                        </h2>
+                        <div id="goalDetailsHistory" class="max-h-48 overflow-y-auto pr-2">
+                            <!-- Динамически заполняется JavaScript -->
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex flex-wrap justify-center gap-3">
+                    <button onclick="openAddFundsModal()" class="neumorphic-btn px-6 py-3 text-white primary-gradient rounded-xl hover:shadow-lg transition-all flex items-center">
+                        <i class="fas fa-plus-circle icon"></i> Пополнить
+                    </button>
+                    <button onclick="openWithdrawFundsModal()" class="neumorphic-btn px-6 py-3 text-white warning-gradient rounded-xl hover:shadow-lg transition-all flex items-center">
+                        <i class="fas fa-minus-circle icon"></i> Изъять
+                    </button>
+                    <button onclick="openEditGoalModal()" class="neumorphic-btn px-6 py-3 text-gray-700 rounded-xl hover:shadow-lg transition-all flex items-center">
+                        <i class="fas fa-edit icon"></i> Редактировать
+                    </button>
+                    <button onclick="deleteGoal()" class="neumorphic-btn px-6 py-3 text-white danger-gradient rounded-xl hover:shadow-lg transition-all flex items-center">
+                        <i class="fas fa-trash-alt icon"></i> Удалить
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Статистика -->
+        <div id="statistics" class="page hidden">
+            <button onclick="showPage('home')" class="neumorphic-btn px-4 py-2 mb-6 rounded-xl hover:shadow-lg transition-all flex items-center">
+                <i class="fas fa-arrow-left icon"></i> На главную
+            </button>
+            
+            <h1 class="text-3xl font-bold mb-8 text-center text-transparent bg-clip-text primary-gradient flex items-center justify-center">
+                <i class="fas fa-chart-bar icon-lg mr-2"></i> Статистика
+            </h1>
+            
+            <div class="neumorphic p-6 rounded-2xl mb-8">
+                <h2 class="text-2xl font-semibold mb-6 text-center flex items-center justify-center">
+                    <i class="fas fa-chart-pie icon mr-2"></i> Обзор накоплений
+                </h2>
+                <canvas id="statsChart" class="w-full h-64 md:h-80"></canvas>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                <div class="neumorphic p-6 rounded-2xl">
+                    <h2 class="text-2xl font-semibold mb-6 text-center flex items-center justify-center">
+                        <i class="fas fa-balance-scale icon mr-2"></i> Сравнение целей
+                    </h2>
+                    <canvas id="comparisonChart" class="w-full h-64"></canvas>
+                </div>
+                <div class="neumorphic p-6 rounded-2xl">
+                    <h2 class="text-2xl font-semibold mb-6 text-center flex items-center justify-center">
+                        <i class="fas fa-calendar-alt icon mr-2"></i> Взносы по месяцам
+                    </h2>
+                    <canvas id="contributionsChart" class="w-full h-64"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Модальные окна -->
+        <!-- Модалка добавления цели -->
+        <div id="addGoalModal" class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50 hidden">
+            <div class="neumorphic p-6 rounded-2xl w-full max-w-md mx-4">
+                <h2 class="text-2xl font-bold mb-6 text-center flex items-center justify-center">
+                    <i class="fas fa-plus-circle icon-lg mr-2"></i> Новая цель
+                </h2>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-gray-600 mb-2 flex items-center">
+                            <i class="fas fa-heading icon mr-2"></i> Название цели
+                        </label>
+                        <input id="goalName" type="text" placeholder="Например: Новый ноутбук" 
+                               class="w-full p-3 neumorphic-inset rounded-xl">
+                    </div>
+                    <div>
+                        <label class="block text-gray-600 mb-2 flex items-center">
+                            <i class="fas fa-align-left icon mr-2"></i> Описание
+                        </label>
+                        <textarea id="goalDescription" placeholder="Опишите свою цель" 
+                                  class="w-full p-3 neumorphic-inset rounded-xl h-24"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-gray-600 mb-2 flex items-center">
+                            <i class="fas fa-money-bill-wave icon mr-2"></i> Валюта
+                        </label>
+                        <select id="goalCurrency" class="w-full p-3 neumorphic-inset rounded-xl">
+                            <option value="RUB">Российский рубль (₽)</option>
+                            <option value="USD">Доллар США ($)</option>
+                            <option value="UZS">Узбекский сум (UZS)</option>
+                            <option value="KZT">Казахстанский тенге (₸)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-gray-600 mb-2 flex items-center">
+                            <i class="fas fa-ruble-sign icon mr-2"></i> Целевая сумма
+                        </label>
+                        <input id="goalTarget" type="number" placeholder="50000" 
+                               class="w-full p-3 neumorphic-inset rounded-xl">
+                    </div>
+                    <div>
+                        <label class="block text-gray-600 mb-2 flex items-center">
+                            <i class="fas fa-calendar-alt icon mr-2"></i> Срок
+                        </label>
+                        <input id="goalDeadline" type="date" 
+                               class="w-full p-3 neumorphic-inset rounded-xl">
+                    </div>
+                    <div>
+                        <label class="block text-gray-600 mb-2 flex items-center">
+                            <i class="fas fa-image icon mr-2"></i> Изображение
+                        </label>
+                        <input id="goalImage" type="file" accept="image/*" 
+                               class="w-full p-2 neumorphic-inset rounded-xl">
+                    </div>
+                </div>
+                <div class="flex justify-center space-x-4 mt-6">
+                    <button onclick="closeModal('addGoalModal')" class="neumorphic-btn px-6 py-3 rounded-xl hover:shadow-lg transition-all flex items-center">
+                        <i class="fas fa-times icon"></i> Отмена
+                    </button>
+                    <button onclick="addGoal()" class="neumorphic-btn px-6 py-3 text-white success-gradient rounded-xl hover:shadow-lg transition-all flex items-center">
+                        <i class="fas fa-save icon"></i> Сохранить
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Модалка пополнения -->
+        <div id="addFundsModal" class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50 hidden">
+            <div class="neumorphic p-6 rounded-2xl w-full max-w-md mx-4">
+                <h2 class="text-2xl font-bold mb-6 text-center flex items-center justify-center">
+                    <i class="fas fa-plus-circle icon-lg mr-2"></i> Пополнить цель
+                </h2>
+                <div>
+                    <label class="block text-gray-600 mb-2 flex items-center">
+                        <i class="fas fa-ruble-sign icon mr-2"></i> Сумма
+                    </label>
+                    <input id="fundsAmount" type="number" placeholder="Введите сумму" 
+                           class="w-full p-4 neumorphic-inset rounded-xl text-center text-xl">
+                </div>
+                <div class="flex justify-center space-x-4 mt-6">
+                    <button onclick="closeModal('addFundsModal')" class="neumorphic-btn px-6 py-3 rounded-xl hover:shadow-lg transition-all flex items-center">
+                        <i class="fas fa-times icon"></i> Отмена
+                    </button>
+                    <button onclick="addFunds()" class="neumorphic-btn px-6 py-3 text-white primary-gradient rounded-xl hover:shadow-lg transition-all flex items-center">
+                        <i class="fas fa-check icon"></i> Пополнить
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Модалка изъятия -->
+        <div id="withdrawFundsModal" class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50 hidden">
+            <div class="neumorphic p-6 rounded-2xl w-full max-w-md mx-4">
+                <h2 class="text-2xl font-bold mb-6 text-center flex items-center justify-center">
+                    <i class="fas fa-minus-circle icon-lg mr-2"></i> Изъять средства
+                </h2>
+                <div>
+                    <label class="block text-gray-600 mb-2 flex items-center">
+                        <i class="fas fa-ruble-sign icon mr-2"></i> Сумма
+                    </label>
+                    <input id="withdrawAmount" type="number" placeholder="Введите сумму" 
+                           class="w-full p-4 neumorphic-inset rounded-xl text-center text-xl">
+                </div>
+                <div class="flex justify-center space-x-4 mt-6">
+                    <button onclick="closeModal('withdrawFundsModal')" class="neumorphic-btn px-6 py-3 rounded-xl hover:shadow-lg transition-all flex items-center">
+                        <i class="fas fa-times icon"></i> Отмена
+                    </button>
+                    <button onclick="withdrawFunds()" class="neumorphic-btn px-6 py-3 text-white warning-gradient rounded-xl hover:shadow-lg transition-all flex items-center">
+                        <i class="fas fa-check icon"></i> Изъять
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Модалка добавления взноса -->
+        <div id="addContributionModal" class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50 hidden">
+            <div class="neumorphic p-6 rounded-2xl w-full max-w-md mx-4">
+                <h2 class="text-2xl font-bold mb-6 text-center flex items-center justify-center">
+                    <i class="fas fa-plus-circle icon-lg mr-2"></i> Добавить взнос
+                </h2>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-gray-600 mb-2 flex items-center">
+                            <i class="fas fa-ruble-sign icon mr-2"></i> Сумма
+                        </label>
+                        <input id="contributionAmount" type="number" placeholder="Введите сумму" 
+                               class="w-full p-4 neumorphic-inset rounded-xl text-center text-xl">
+                    </div>
+                    <div>
+                        <label class="block text-gray-600 mb-2 flex items-center">
+                            <i class="fas fa-bullseye icon mr-2"></i> Цель
+                        </label>
+                        <select id="contributionGoal" class="w-full p-3 neumorphic-inset rounded-xl">
+                            <option value="">Выберите цель</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="flex justify-center space-x-4 mt-6">
+                    <button onclick="closeModal('addContributionModal')" class="neumorphic-btn px-6 py-3 rounded-xl hover:shadow-lg transition-all flex items-center">
+                        <i class="fas fa-times icon"></i> Отмена
+                    </button>
+                    <button onclick="addContribution()" class="neumorphic-btn px-6 py-3 text-white primary-gradient rounded-xl hover:shadow-lg transition-all flex items-center">
+                        <i class="fas fa-check icon"></i> Добавить
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Модалка редактирования цели -->
+        <div id="editGoalModal" class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50 hidden">
+            <div class="neumorphic p-6 rounded-2xl w-full max-w-md mx-4">
+                <h2 class="text-2xl font-bold mb-6 text-center flex items-center justify-center">
+                    <i class="fas fa-edit icon-lg mr-2"></i> Редактировать цель
+                </h2>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-gray-600 mb-2 flex items-center">
+                            <i class="fas fa-heading icon mr-2"></i> Название цели
+                        </label>
+                        <input id="editGoalName" type="text" class="w-full p-3 neumorphic-inset rounded-xl">
+                    </div>
+                    <div>
+                        <label class="block text-gray-600 mb-2 flex items-center">
+                            <i class="fas fa-align-left icon mr-2"></i> Описание
+                        </label>
+                        <textarea id="editGoalDescription" class="w-full p-3 neumorphic-inset rounded-xl h-24"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-gray-600 mb-2 flex items-center">
+                            <i class="fas fa-money-bill-wave icon mr-2"></i> Валюта
+                        </label>
+                        <select id="editGoalCurrency" class="w-full p-3 neumorphic-inset rounded-xl">
+                            <option value="RUB">Российский рубль (₽)</option>
+                            <option value="USD">Доллар США ($)</option>
+                            <option value="UZS">Узбекский сум (UZS)</option>
+                            <option value="KZT">Казахстанский тенге (₸)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-gray-600 mb-2 flex items-center">
+                            <i class="fas fa-ruble-sign icon mr-2"></i> Целевая сумма
+                        </label>
+                        <input id="editGoalTarget" type="number" class="w-full p-3 neumorphic-inset rounded-xl">
+                    </div>
+                    <div>
+                        <label class="block text-gray-600 mb-2 flex items-center">
+                            <i class="fas fa-calendar-alt icon mr-2"></i> Срок
+                        </label>
+                        <input id="editGoalDeadline" type="date" class="w-full p-3 neumorphic-inset rounded-xl">
+                    </div>
+                    <div>
+                        <label class="block text-gray-600 mb-2 flex items-center">
+                            <i class="fas fa-image icon mr-2"></i> Изображение
+                        </label>
+                        <input id="editGoalImage" type="file" accept="image/*" class="w-full p-2 neumorphic-inset rounded-xl">
+                    </div>
+                </div>
+                <div class="flex justify-center space-x-4 mt-6">
+                    <button onclick="closeModal('editGoalModal')" class="neumorphic-btn px-6 py-3 rounded-xl hover:shadow-lg transition-all flex items-center">
+                        <i class="fas fa-times icon"></i> Отмена
+                    </button>
+                    <button onclick="saveEditedGoal()" class="neumorphic-btn px-6 py-3 text-white success-gradient rounded-xl hover:shadow-lg transition-all flex items-center">
+                        <i class="fas fa-save icon"></i> Сохранить
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Модалка настроек -->
+        <div id="settingsModal" class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50 hidden">
+            <div class="neumorphic p-6 rounded-2xl w-full max-w-md mx-4">
+                <h2 class="text-2xl font-bold mb-6 text-center flex items-center justify-center">
+                    <i class="fas fa-cog icon-lg mr-2"></i> Настройки
+                </h2>
+                <div class="space-y-6">
+                    <div>
+                        <label class="block text-gray-600 mb-3 flex items-center">
+                            <i class="fas fa-palette icon mr-2"></i> Тема интерфейса
+                        </label>
+                        <select id="themeSelect" class="w-full p-3 neumorphic-inset rounded-xl" onchange="toggleCustomThemeInputs()">
+                            <option value="light">Светлая</option>
+                            <option value="dark">Тёмная</option>
+                            <option value="custom">Пользовательская</option>
+                        </select>
+                    </div>
+                    
+                    <div id="customThemeInputs" class="hidden space-y-4">
+                        <div>
+                            <label class="block text-gray-600 mb-2 flex items-center">
+                                <i class="fas fa-fill-drip icon mr-2"></i> Цвет фона
+                            </label>
+                            <input id="customBackground" type="color" class="w-full p-1 neumorphic-inset rounded-xl h-12">
+                        </div>
+                        <div>
+                            <label class="block text-gray-600 mb-2 flex items-center">
+                                <i class="fas fa-font icon mr-2"></i> Цвет текста
+                            </label>
+                            <input id="customText" type="color" class="w-full p-1 neumorphic-inset rounded-xl h-12">
+                        </div>
+                        <div>
+                            <label class="block text-gray-600 mb-2 flex items-center">
+                                <i class="fas fa-toggle-on icon mr-2"></i> Цвет кнопок
+                            </label>
+                            <input id="customButton" type="color" class="w-full p-1 neumorphic-inset rounded-xl h-12">
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-gray-600 mb-3 flex items-center">
+                            <i class="fas fa-lock icon mr-2"></i> Безопасность
+                        </label>
+                        <button onclick="openPinSetupModal()" class="neumorphic-btn w-full py-3 text-white primary-gradient rounded-xl hover:shadow-lg transition-all flex items-center justify-center">
+                            <i class="fas fa-key icon"></i> Изменить PIN-код
+                        </button>
+                    </div>
+                    
+                    <div class="pt-4 border-t border-gray-200 dark:border-gray-700">
+                        <button onclick="exportData()" class="neumorphic-btn w-full py-3 text-gray-700 rounded-xl hover:shadow-lg transition-all mb-3 flex items-center justify-center">
+                            <i class="fas fa-file-export icon"></i> Экспорт данных
+                        </button>
+                        <button onclick="importData()" class="neumorphic-btn w-full py-3 text-gray-700 rounded-xl hover:shadow-lg transition-all flex items-center justify-center">
+                            <i class="fas fa-file-import icon"></i> Импорт данных
+                        </button>
+                    </div>
+                </div>
+                <div class="flex justify-center space-x-4 mt-8">
+                    <button onclick="closeModal('settingsModal')" class="neumorphic-btn px-6 py-3 rounded-xl hover:shadow-lg transition-all flex items-center">
+                        <i class="fas fa-times icon"></i> Закрыть
+                    </button>
+                    <button onclick="applyTheme()" class="neumorphic-btn px-6 py-3 text-white success-gradient rounded-xl hover:shadow-lg transition-all flex items-center">
+                        <i class="fas fa-check icon"></i> Применить
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
-        // Проверяем, есть ли сохраненные данные
-        let balance = parseFloat(localStorage.getItem('balance')) || 0;
-        let history = JSON.parse(localStorage.getItem('history')) || [];
-        let goal = parseFloat(localStorage.getItem('goal')) || 0;
-        
-        // Обновляем интерфейс
-        updateBalance();
-        updateGoal();
-        renderHistory();
-        
-        // Назначаем обработчики событий
-        document.getElementById('add').addEventListener('click', addMoney);
-        document.getElementById('spend').addEventListener('click', spendMoney);
-        document.getElementById('setGoal').addEventListener('click', setGoal);
-        
-        // Обработка нажатия Enter
-        document.getElementById('amount').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') addMoney();
-        });
-        document.getElementById('spendAmount').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') spendMoney();
-        });
-        document.getElementById('goalAmount').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') setGoal();
-        });
-        
-        function addMoney() {
-            const amount = parseFloat(document.getElementById('amount').value);
-            if (!amount || amount <= 0) {
-                alert('Введите корректную сумму');
-                return;
-            }
-            
-            balance = parseFloat(balance) + amount;
-            saveData();
-            
-            // Добавляем в историю
-            history.push({
-                type: 'income',
-                amount: amount,
-                date: new Date()
+        // Хранение данных
+        let goals = JSON.parse(localStorage.getItem('goals')) || [];
+        let achievements = JSON.parse(localStorage.getItem('achievements')) || [];
+        let themeSettings = JSON.parse(localStorage.getItem('themeSettings')) || { theme: 'light', custom: {} };
+        let securitySettings = JSON.parse(localStorage.getItem('securitySettings')) || { pinHash: null, failedAttempts: 0, lockoutUntil: null };
+        let currentGoalId = null;
+        let charts = {};
+
+        // Курсы валют (упрощенные, можно заменить на актуальные или API)
+        const exchangeRates = {
+            RUB: 1,
+            USD: 90,    // 1 USD = 90 RUB
+            UZS: 0.007, // 1 UZS = 0.007 RUB
+            KZT: 0.2    // 1 KZT = 0.2 RUB
+        };
+
+        // Функция форматирования суммы с валютой
+        function formatCurrency(amount, currency) {
+            const formatter = new Intl.NumberFormat('ru-RU', {
+                style: 'decimal',
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
             });
-            saveHistory();
             
-            updateBalance();
-            updateGoal();
-            document.getElementById('amount').value = '';
-            renderHistory();
-        }
-        
-        function spendMoney() {
-            const amount = parseFloat(document.getElementById('spendAmount').value);
-            if (!amount || amount <= 0) {
-                alert('Введите корректную сумму');
-                return;
+            const formattedAmount = formatter.format(amount);
+            
+            switch(currency) {
+                case 'RUB': return `${formattedAmount} ₽`;
+                case 'USD': return `$${formattedAmount}`;
+                case 'UZS': return `${formattedAmount} UZS`;
+                case 'KZT': return `${formattedAmount} ₸`;
+                default: return `${formattedAmount} ₽`;
             }
-            
-            if (amount > balance) {
-                alert('Недостаточно средств');
-                return;
-            }
-            
-            balance -= amount;
-            saveData();
-            
-            // Добавляем в историю
-            history.push({
-                type: 'expense',
-                amount: amount,
-                date: new Date()
-            });
-            saveHistory();
-            
-            updateBalance();
-            updateGoal();
-            document.getElementById('spendAmount').value = '';
-            renderHistory();
         }
-        
-        function setGoal() {
-            const amount = parseFloat(document.getElementById('goalAmount').value);
-            if (!amount || amount <= 0) {
-                alert('Введите корректную сумму цели');
-                return;
-            }
-            
-            goal = amount;
-            localStorage.setItem('goal', goal);
-            updateGoal();
-            document.getElementById('goalAmount').value = '';
+
+        // Функция конвертации между валютами
+        function convertCurrency(amount, fromCurrency, toCurrency) {
+            if (fromCurrency === toCurrency) return amount;
+            const rubAmount = amount * exchangeRates[fromCurrency];
+            return rubAmount / exchangeRates[toCurrency];
         }
-        
-        function updateBalance() {
-            document.getElementById('balance').textContent = balance.toFixed(2) + ' UZS';
+
+        // Инициализация при загрузке
+        document.addEventListener('DOMContentLoaded', function() {
+            initSecurity();
+            initThemeSettings();
+        });
+
+        // Безопасность и PIN
+        function hashPin(pin) {
+            return CryptoJS.SHA256(pin).toString();
         }
-        
-        function updateGoal() {
-            const goalElement = document.getElementById('goalText');
-            const progressElement = document.getElementById('progress');
-            const percentElement = document.getElementById('progressPercent');
-            const remainingElement = document.getElementById('remainingAmount');
+
+        function setPin() {
+            const pin = document.getElementById('pinSetupInput').value;
+            const confirmPin = document.getElementById('pinConfirmInput').value;
+            const error = document.getElementById('pinSetupError');
             
-            if (goal > 0) {
-                const progress = Math.min(100, (balance / goal) * 100);
-                const remaining = Math.max(0, goal - balance);
-                
-                goalElement.textContent = goal.toFixed(2) + ' UZS';
-                progressElement.style.width = progress + '%';
-                percentElement.textContent = progress.toFixed(1) + '%';
-                remainingElement.textContent = 'Осталось: ' + remaining.toFixed(2) + ' UZS';
+            if (pin.length === 4 && /^\d+$/.test(pin) && pin === confirmPin) {
+                securitySettings.pinHash = hashPin(pin);
+                securitySettings.failedAttempts = 0;
+                securitySettings.lockoutUntil = null;
+                localStorage.setItem('securitySettings', JSON.stringify(securitySettings));
+                closeModal('pinSetupModal');
+                showApp();
+                showNotification('PIN-код установлен!');
             } else {
-                goalElement.textContent = 'Не установлена';
-                progressElement.style.width = '0%';
-                percentElement.textContent = '0%';
-                remainingElement.textContent = '';
+                error.classList.remove('hidden');
+                error.textContent = 'PIN-коды не совпадают или некорректны (4 цифры).';
             }
         }
-        
-        function renderHistory() {
-            const historyList = document.getElementById('historyList');
+
+        function verifyPin() {
+            const pin = document.getElementById('pinInput').value;
+            const error = document.getElementById('pinError');
+            const now = Date.now();
             
-            if (history.length === 0) {
-                historyList.innerHTML = '<p style="text-align: center; color: #999;">Нет операций</p>';
+            if (securitySettings.lockoutUntil && now < securitySettings.lockoutUntil) {
+                error.classList.remove('hidden');
+                error.textContent = `Слишком много попыток. Попробуйте снова через ${Math.ceil((securitySettings.lockoutUntil - now) / 60000)} минут.`;
+                return;
+            }
+
+            if (pin.length === 4 && hashPin(pin) === securitySettings.pinHash) {
+                securitySettings.failedAttempts = 0;
+                securitySettings.lockoutUntil = null;
+                localStorage.setItem('securitySettings', JSON.stringify(securitySettings));
+                closeModal('pinEntryModal');
+                showApp();
+            } else {
+                securitySettings.failedAttempts++;
+                if (securitySettings.failedAttempts >= 5) {
+                    securitySettings.lockoutUntil = now + 5 * 60 * 1000;
+                    error.textContent = 'Слишком много попыток. Заблокировано на 5 минут.';
+                } else {
+                    error.textContent = `Неверный PIN. Осталось попыток: ${5 - securitySettings.failedAttempts}`;
+                }
+                error.classList.remove('hidden');
+                localStorage.setItem('securitySettings', JSON.stringify(securitySettings));
+                document.getElementById('pinInput').value = '';
+            }
+        }
+
+        function appendPin(digit) {
+            const input = document.getElementById('pinInput');
+            if (input.value.length < 4) {
+                input.value += digit;
+            }
+        }
+
+        function clearPin() {
+            document.getElementById('pinInput').value = '';
+        }
+
+        function openPinSetupModal() {
+            document.getElementById('pinSetupInput').value = '';
+            document.getElementById('pinConfirmInput').value = '';
+            document.getElementById('pinSetupError').classList.add('hidden');
+            closeModal('settingsModal');
+            openModal('pinSetupModal');
+        }
+
+        function initSecurity() {
+            document.getElementById('app').classList.add('hidden');
+            if (securitySettings.pinHash) {
+                document.getElementById('pinEntryModal').style.display = 'flex';
+                document.getElementById('pinInput').value = '';
+                document.getElementById('pinError').classList.add('hidden');
+            } else {
+                document.getElementById('pinSetupModal').style.display = 'flex';
+            }
+        }
+
+        // Тема и настройки
+        function initThemeSettings() {
+            document.getElementById('themeSelect').value = themeSettings.theme;
+            document.getElementById('customBackground').value = themeSettings.custom.background || '#f5f7fa';
+            document.getElementById('customText').value = themeSettings.custom.text || '#1a202c';
+            document.getElementById('customButton').value = themeSettings.custom.button || '#667eea';
+            toggleCustomThemeInputs();
+        }
+
+        function toggleCustomThemeInputs() {
+            const theme = document.getElementById('themeSelect').value;
+            document.getElementById('customThemeInputs').classList.toggle('hidden', theme !== 'custom');
+        }
+
+        function applyTheme() {
+            const theme = document.getElementById('themeSelect').value;
+            themeSettings = {
+                theme,
+                custom: theme === 'custom' ? {
+                    background: document.getElementById('customBackground').value,
+                    text: document.getElementById('customText').value,
+                    button: document.getElementById('customButton').value
+                } : {}
+            };
+            localStorage.setItem('themeSettings', JSON.stringify(themeSettings));
+            
+            // Применяем тему
+            const body = document.getElementById('app-body');
+            if (theme === 'dark') {
+                body.classList.add('dark');
+                document.getElementById('darkModeIcon').className = 'fas fa-moon icon';
+            } else {
+                body.classList.remove('dark');
+                document.getElementById('darkModeIcon').className = 'fas fa-sun icon';
+            }
+            
+            if (theme === 'custom') {
+                body.style.backgroundColor = themeSettings.custom.background;
+                body.style.color = themeSettings.custom.text;
+            } else {
+                body.style.backgroundColor = '';
+                body.style.color = '';
+            }
+            
+            closeModal('settingsModal');
+            showNotification('Настройки темы применены!');
+            updateCharts();
+        }
+
+        function toggleDarkMode() {
+            const body = document.getElementById('app-body');
+            const icon = document.getElementById('darkModeIcon');
+            const isDark = body.classList.contains('dark');
+            
+            if (isDark) {
+                body.classList.remove('dark');
+                themeSettings.theme = 'light';
+                icon.className = 'fas fa-sun icon';
+            } else {
+                body.classList.add('dark');
+                themeSettings.theme = 'dark';
+                icon.className = 'fas fa-moon icon';
+            }
+            
+            localStorage.setItem('themeSettings', JSON.stringify(themeSettings));
+            updateCharts();
+        }
+
+        // Навигация по страницам
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => page.classList.add('hidden'));
+            document.getElementById(pageId).classList.remove('hidden');
+            
+            // Обновляем контент страницы
+            switch(pageId) {
+                case 'home':
+                    updateHomePage();
+                    break;
+                case 'goals':
+                    updateGoalsPage();
+                    break;
+                case 'goalDetails':
+                    showGoalDetails(currentGoalId);
+                    break;
+                case 'statistics':
+                    updateStatisticsPage();
+                    break;
+            }
+        }
+
+        // Работа с модальными окнами
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.remove('hidden');
+            
+            // Особые действия для некоторых модалок
+            if (modalId === 'addContributionModal') {
+                const select = document.getElementById('contributionGoal');
+                select.innerHTML = '<option value="">Выберите цель</option>';
+                goals.forEach(goal => {
+                    select.innerHTML += `<option value="${goal.id}">${goal.name}</option>`;
+                });
+            }
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+        }
+
+        // Управление целями
+        function addGoal() {
+            const name = document.getElementById('goalName').value.trim();
+            const description = document.getElementById('goalDescription').value.trim();
+            const target = parseFloat(document.getElementById('goalTarget').value) || 0;
+            const currency = document.getElementById('goalCurrency').value;
+            const deadline = document.getElementById('goalDeadline').value;
+            const imageInput = document.getElementById('goalImage');
+            
+            if (!name || target <= 0) {
+                showNotification('Пожалуйста, заполните название и укажите целевую сумму', 'error');
                 return;
             }
             
+            // Создаем URL для изображения или используем заглушку
+            let imageUrl = 'https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80';
+            if (imageInput.files[0]) {
+                imageUrl = URL.createObjectURL(imageInput.files[0]);
+            }
+            
+            const goal = {
+                id: Date.now(),
+                name,
+                description,
+                target,
+                currency,
+                current: 0,
+                deadline,
+                image: imageUrl,
+                history: []
+            };
+            
+            goals.push(goal);
+            localStorage.setItem('goals', JSON.stringify(goals));
+            
+            closeModal('addGoalModal');
+            showNotification('Цель успешно добавлена!');
+            updateGoalsPage();
+            checkAchievements();
+        }
+
+        function updateGoalsPage() {
+            const goalsList = document.getElementById('goalsList');
+            const emptyMessage = document.getElementById('emptyGoalsMessage');
+            
+            if (goals.length === 0) {
+                goalsList.innerHTML = '';
+                emptyMessage.style.display = 'block';
+                return;
+            }
+            
+            emptyMessage.style.display = 'none';
+            goalsList.innerHTML = '';
+            
+            goals.forEach(goal => {
+                const progress = (goal.current / goal.target * 100).toFixed(1);
+                const progressWidth = progress > 100 ? 100 : progress;
+                
+                goalsList.innerHTML += `
+                    <div class="goal-card neumorphic p-6 rounded-2xl">
+                        <div class="goal-card-content">
+                            <div class="relative mb-4 h-40 rounded-xl overflow-hidden">
+                                <img src="${goal.image}" class="w-full h-full object-cover" alt="${goal.name}">
+                                <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
+                                    <h3 class="text-xl font-bold text-white">${goal.name}</h3>
+                                </div>
+                            </div>
+                            
+                            <div class="flex justify-between items-center mb-3">
+                                <span class="text-gray-500 flex items-center">
+                                    <i class="fas fa-bullseye mr-2"></i> Цель: ${formatCurrency(goal.target, goal.currency)}
+                                </span>
+                                <span class="font-semibold flex items-center">
+                                    <i class="fas fa-coins mr-2"></i> ${formatCurrency(goal.current, goal.currency)}
+                                </span>
+                            </div>
+                            
+                            <div class="neumorphic-inset h-2 rounded-full mb-4">
+                                <div class="h-full rounded-full ${progress >= 100 ? 'success-gradient' : 'primary-gradient'}" style="width: ${progressWidth}%"></div>
+                            </div>
+                            
+                            <div class="flex justify-between text-sm text-gray-500 mb-4">
+                                <span><i class="fas fa-chart-line mr-1"></i> ${progress}%</span>
+                                <span><i class="fas fa-calendar-alt mr-1"></i> ${goal.deadline ? new Date(goal.deadline).toLocaleDateString() : 'Без срока'}</span>
+                            </div>
+                            
+                            <button onclick="showGoalDetails(${goal.id})" class="neumorphic-btn w-full py-2 text-indigo-600 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-cog mr-2"></i> Управлять
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            // Обновляем превью на главной странице
+            updateGoalsPreview();
+        }
+
+        function updateGoalsPreview() {
+            const previewContainer = document.getElementById('goalsPreview');
+            if (!previewContainer) return;
+            
+            previewContainer.innerHTML = '';
+            
+            // Показываем только 2 последние цели или все, если их меньше
+            const previewGoals = goals.slice(0, 2);
+            
+            previewGoals.forEach(goal => {
+                const progress = (goal.current / goal.target * 100).toFixed(1);
+                const progressWidth = progress > 100 ? 100 : progress;
+                
+                previewContainer.innerHTML += `
+                    <div class="goal-card neumorphic p-6 rounded-2xl">
+                        <div class="goal-card-content">
+                            <div class="flex items-start justify-between mb-4">
+                                <div>
+                                    <h3 class="text-xl font-bold flex items-center">
+                                        <i class="fas fa-bullseye mr-2"></i> ${goal.name}
+                                    </h3>
+                                    <p class="text-gray-500 flex items-center">
+                                        <i class="fas fa-coins mr-2"></i> Накоплено: ${formatCurrency(goal.current, goal.currency)} из ${formatCurrency(goal.target, goal.currency)}
+                                    </p>
+                                </div>
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${progress >= 100 ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'}">
+                                    <i class="fas fa-percentage mr-1"></i> ${progress}%
+                                </span>
+                            </div>
+                            <div class="neumorphic-inset h-3 rounded-full mb-4">
+                                <div class="h-full rounded-full ${progress >= 100 ? 'success-gradient' : 'primary-gradient'}" style="width: ${progressWidth}%"></div>
+                            </div>
+                            <button onclick="showGoalDetails(${goal.id})" class="neumorphic-btn w-full py-2 text-indigo-600 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-info-circle mr-2"></i> Подробнее
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function showGoalDetails(id) {
+            currentGoalId = id;
+            const goal = goals.find(g => g.id === id);
+            if (!goal) {
+                showPage('goals');
+                return;
+            }
+            
+            const progress = (goal.current / goal.target * 100).toFixed(1);
+            const progressWidth = progress > 100 ? 100 : progress;
+            
+            // Устанавливаем данные цели
+            document.getElementById('goalDetailsTitle').textContent = goal.name;
+            document.getElementById('goalDetailsImage').src = goal.image;
+            document.getElementById('goalDetailsDescription').textContent = goal.description || 'Описание отсутствует';
+            document.getElementById('goalDetailsTarget').textContent = formatCurrency(goal.target, goal.currency);
+            document.getElementById('goalDetailsCurrent').textContent = formatCurrency(goal.current, goal.currency);
+            document.getElementById('goalDetailsProgress').textContent = `${progress}%`;
+            document.getElementById('goalDetailsDeadline').textContent = goal.deadline ? new Date(goal.deadline).toLocaleDateString() : 'Не установлен';
+            document.getElementById('goalProgressBar').style.width = `${progressWidth}%`;
+            
+            // Обновляем историю
+            const historyList = document.getElementById('goalDetailsHistory');
             historyList.innerHTML = '';
             
-            // Показываем последние 10 операций в обратном порядке
-            history.slice(-10).reverse().forEach(item => {
-                const div = document.createElement('div');
-                div.className = 'history-item';
-                div.innerHTML = `
-                    <span class="${item.type === 'income' ? 'income' : 'expense'}">
-                        ${item.type === 'income' ? '+' : '-'}${item.amount.toFixed(2)} UZS
-                    </span>
-                    <span style="float: right; color: #999;">
-                        ${new Date(item.date).toLocaleString()}
-                    </span>
+            if (goal.history.length === 0) {
+                historyList.innerHTML = `
+                    <div class="text-center py-4">
+                        <i class="fas fa-history text-gray-400 text-4xl mb-2"></i>
+                        <p class="text-gray-500">История операций отсутствует</p>
+                    </div>
                 `;
-                historyList.appendChild(div);
+            } else {
+                goal.history.forEach(entry => {
+                    const isDeposit = entry.type === 'Пополнение';
+                    historyList.innerHTML += `
+                        <div class="neumorphic p-3 rounded-lg mb-2 flex justify-between items-center">
+                            <div>
+                                <p class="font-medium flex items-center">
+                                    <i class="fas ${isDeposit ? 'fa-plus-circle text-green-500' : 'fa-minus-circle text-yellow-500'} mr-2"></i>
+                                    ${entry.type}
+                                </p>
+                                <p class="text-sm text-gray-500 flex items-center">
+                                    <i class="fas fa-clock mr-2"></i>
+                                    ${new Date(entry.date).toLocaleString()}
+                                </p>
+                            </div>
+                            <span class="font-semibold ${isDeposit ? 'text-green-600' : 'text-yellow-600'}">
+                                ${isDeposit ? '+' : '-'}${formatCurrency(entry.amount, goal.currency)}
+                            </span>
+                        </div>
+                    `;
+                });
+            }
+            
+            // Обновляем график прогресса
+            updateGoalProgressChart(goal);
+            
+            // Показываем страницу
+            showPage('goalDetails');
+        }
+
+        function updateGoalProgressChart(goal) {
+            const ctx = document.getElementById('goalProgressChart').getContext('2d');
+            
+            if (charts.goalProgressChart) {
+                charts.goalProgressChart.destroy();
+            }
+            
+            charts.goalProgressChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: getLastSixMonths(),
+                    datasets: [{
+                        label: 'Накопления',
+                        data: generateProgressData(goal),
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        }
+                    }
+                }
             });
         }
-        
-        function saveData() {
-            localStorage.setItem('balance', balance);
+
+        function generateProgressData(goal) {
+            // Упрощенная генерация данных для графика
+            const months = getLastSixMonths();
+            const data = [];
+            let accumulated = 0;
+            
+            months.forEach((month, index) => {
+                // Имитация роста накоплений
+                if (index === months.length - 1) {
+                    accumulated = goal.current;
+                } else {
+                    accumulated = Math.min(goal.current, (goal.current / months.length) * (index + 1));
+                }
+                data.push(accumulated);
+            });
+            
+            return data;
         }
-        
-        function saveHistory() {
-            localStorage.setItem('history', JSON.stringify(history));
+
+        function getLastSixMonths() {
+            const months = [];
+            const monthNames = ['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн', 'Июл', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек'];
+            const date = new Date();
+            
+            for (let i = 5; i >= 0; i--) {
+                const d = new Date(date.getFullYear(), date.getMonth() - i, 1);
+                months.push(`${monthNames[d.getMonth()]} ${d.getFullYear()}`);
+            }
+            
+            return months;
         }
+
+        function addFunds() {
+            const amount = parseFloat(document.getElementById('fundsAmount').value);
+            if (!amount || amount <= 0) {
+                showNotification('Пожалуйста, введите корректную сумму', 'error');
+                return;
+            }
+            
+            const goal = goals.find(g => g.id === currentGoalId);
+            if (!goal) {
+                showNotification('Цель не найдена', 'error');
+                return;
+            }
+            
+            goal.current += amount;
+            goal.history.push({
+                date: new Date().toISOString(),
+                type: 'Пополнение',
+                amount: amount
+            });
+            
+            localStorage.setItem('goals', JSON.stringify(goals));
+            closeModal('addFundsModal');
+            showGoalDetails(currentGoalId);
+            checkGoalProgress(goal);
+            checkAchievements();
+            showNotification(`Средства успешно добавлены! +${formatCurrency(amount, goal.currency)}`);
+        }
+
+        function withdrawFunds() {
+            const amount = parseFloat(document.getElementById('withdrawAmount').value);
+            if (!amount || amount <= 0) {
+                showNotification('Пожалуйста, введите корректную сумму', 'error');
+                return;
+            }
+            
+            const goal = goals.find(g => g.id === currentGoalId);
+            if (!goal) {
+                showNotification('Цель не найдена', 'error');
+                return;
+            }
+            
+            if (amount > goal.current) {
+                showNotification('Недостаточно средств для изъятия', 'error');
+                return;
+            }
+            
+            goal.current -= amount;
+            goal.history.push({
+                date: new Date().toISOString(),
+                type: 'Изъятие',
+                amount: amount
+            });
+            
+            localStorage.setItem('goals', JSON.stringify(goals));
+            closeModal('withdrawFundsModal');
+            showGoalDetails(currentGoalId);
+            showNotification(`Средства успешно изъяты: -${formatCurrency(amount, goal.currency)}`);
+        }
+
+        function openAddGoalModal() {
+            document.getElementById('goalName').value = '';
+            document.getElementById('goalDescription').value = '';
+            document.getElementById('goalTarget').value = '';
+            document.getElementById('goalCurrency').value = 'RUB';
+            document.getElementById('goalDeadline').value = '';
+            document.getElementById('goalImage').value = '';
+            openModal('addGoalModal');
+        }
+
+        function openAddFundsModal() {
+            document.getElementById('fundsAmount').value = '';
+            openModal('addFundsModal');
+        }
+
+        function openWithdrawFundsModal() {
+            document.getElementById('withdrawAmount').value = '';
+            openModal('withdrawFundsModal');
+        }
+
+        function openAddContributionModal() {
+            document.getElementById('contributionAmount').value = '';
+            document.getElementById('contributionGoal').value = '';
+            openModal('addContributionModal');
+        }
+
+        function openEditGoalModal() {
+            const goal = goals.find(g => g.id === currentGoalId);
+            if (!goal) {
+                showNotification('Цель не найдена', 'error');
+                return;
+            }
+            
+            document.getElementById('editGoalName').value = goal.name;
+            document.getElementById('editGoalDescription').value = goal.description;
+            document.getElementById('editGoalTarget').value = goal.target;
+            document.getElementById('editGoalCurrency').value = goal.currency;
+            document.getElementById('editGoalDeadline').value = goal.deadline;
+            document.getElementById('editGoalImage').value = '';
+            openModal('editGoalModal');
+        }
+
+        function saveEditedGoal() {
+            const goal = goals.find(g => g.id === currentGoalId);
+            if (!goal) {
+                showNotification('Цель не найдена', 'error');
+                return;
+            }
+            
+            const name = document.getElementById('editGoalName').value.trim();
+            const description = document.getElementById('editGoalDescription').value.trim();
+            const target = parseFloat(document.getElementById('editGoalTarget').value) || 0;
+            const currency = document.getElementById('editGoalCurrency').value;
+            const deadline = document.getElementById('editGoalDeadline').value;
+            const imageInput = document.getElementById('editGoalImage');
+            
+            if (!name || target <= 0) {
+                showNotification('Пожалуйста, заполните название и укажите целевую сумму', 'error');
+                return;
+            }
+            
+            goal.name = name;
+            goal.description = description;
+            goal.target = target;
+            goal.currency = currency;
+            goal.deadline = deadline;
+            
+            if (imageInput.files[0]) {
+                goal.image = URL.createObjectURL(imageInput.files[0]);
+            }
+            
+            localStorage.setItem('goals', JSON.stringify(goals));
+            closeModal('editGoalModal');
+            showGoalDetails(currentGoalId);
+            checkAchievements();
+            showNotification('Цель успешно обновлена!');
+        }
+
+        function deleteGoal() {
+            if (!confirm('Вы уверены, что хотите удалить эту цель? Все данные будут потеряны.')) {
+                return;
+            }
+            
+            goals = goals.filter(g => g.id !== currentGoalId);
+            localStorage.setItem('goals', JSON.stringify(goals));
+            showPage('goals');
+            showNotification('Цель успешно удалена');
+        }
+
+        function addContribution() {
+            const amount = parseFloat(document.getElementById('contributionAmount').value);
+            const goalId = parseInt(document.getElementById('contributionGoal').value);
+            
+            if (!amount || amount <= 0) {
+                showNotification('Пожалуйста, введите корректную сумму', 'error');
+                return;
+            }
+            
+            if (!goalId) {
+                showNotification('Пожалуйста, выберите цель', 'error');
+                return;
+            }
+            
+            const goal = goals.find(g => g.id === goalId);
+            if (!goal) {
+                showNotification('Цель не найдена', 'error');
+                return;
+            }
+            
+            goal.current += amount;
+            goal.history.push({
+                date: new Date().toISOString(),
+                type: 'Пополнение',
+                amount: amount
+            });
+            
+            localStorage.setItem('goals', JSON.stringify(goals));
+            closeModal('addContributionModal');
+            updateHomePage();
+            checkGoalProgress(goal);
+            checkAchievements();
+            showNotification(`Взнос успешно добавлен! +${formatCurrency(amount, goal.currency)}`);
+        }
+
+        // Достижения
+        function checkAchievements() {
+            // Упрощенная система достижений
+            const newAchievements = [];
+            
+            // Проверяем достижение "50% цели"
+            goals.forEach(goal => {
+                if ((goal.current / goal.target >= 0.5) && 
+                    !achievements.some(a => a.type === 'half_goal' && a.goalId === goal.id)) {
+                    newAchievements.push({
+                        id: Date.now(),
+                        type: 'half_goal',
+                        goalId: goal.id,
+                        title: 'Полпути пройдено!',
+                        description: `Вы накопили 50% для цели "${goal.name}"`,
+                        icon: '🏆',
+                        date: new Date().toISOString()
+                    });
+                }
+            });
+            
+            // Проверяем достижение "Первая цель"
+            if (goals.length > 0 && !achievements.some(a => a.type === 'first_goal')) {
+                newAchievements.push({
+                    id: Date.now(),
+                    type: 'first_goal',
+                    title: 'Первая цель!',
+                    description: 'Вы создали свою первую цель для накоплений',
+                    icon: '🎯',
+                    date: new Date().toISOString()
+                });
+            }
+            
+            // Если есть новые достижения, добавляем их и показываем уведомления
+            if (newAchievements.length > 0) {
+                achievements = [...achievements, ...newAchievements];
+                localStorage.setItem('achievements', JSON.stringify(achievements));
+                
+                newAchievements.forEach(ach => {
+                    showNotification(`Новое достижение: ${ach.title}`, 'success');
+                });
+                
+                updateAchievementsList();
+            }
+        }
+
+        function updateAchievementsList() {
+            const container = document.getElementById('achievementsList');
+            if (!container) return;
+            
+            if (achievements.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full text-center py-8">
+                        <i class="fas fa-trophy text-gray-400 text-4xl mb-4"></i>
+                        <h3 class="text-xl font-semibold mb-2">Пока нет достижений</h3>
+                        <p class="text-gray-500">Продолжайте копить, чтобы получить свои первые достижения!</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = '';
+            
+            achievements.slice().reverse().forEach(ach => {
+                container.innerHTML += `
+                    <div class="neumorphic p-4 rounded-xl flex items-start">
+                        <span class="text-3xl mr-4">${ach.icon}</span>
+                        <div>
+                            <h3 class="text-lg font-semibold">${ach.title}</h3>
+                            <p class="text-gray-600 mb-1">${ach.description}</p>
+                            <p class="text-sm text-gray-500 flex items-center">
+                                <i class="fas fa-calendar-alt mr-2"></i>
+                                ${new Date(ach.date).toLocaleDateString()}
+                            </p>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        // Графики и статистика
+        function updateHomePage() {
+            updateMainProgressChart();
+            updateGoalsPreview();
+            updateAchievementsList();
+        }
+
+        function updateMainProgressChart() {
+            const ctx = document.getElementById('progressChart').getContext('2d');
+            const total = goals.reduce((sum, goal) => sum + convertCurrency(goal.target, goal.currency, 'RUB'), 0);
+            const current = goals.reduce((sum, goal) => sum + convertCurrency(goal.current, goal.currency, 'RUB'), 0);
+            const remaining = Math.max(0, total - current);
+            
+            if (charts.progressChart) {
+                charts.progressChart.destroy();
+            }
+            
+            charts.progressChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Накоплено', 'Осталось'],
+                    datasets: [{
+                        data: [current, remaining],
+                        backgroundColor: ['#667eea', '#e0e5ec'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    cutout: '70%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    const percentage = Math.round((value / total) * 100);
+                                    return `${label}: ${value.toLocaleString()} ₽ (${percentage}%)`;
+                                }
+                            }
+                        }
+                    },
+                    animation: {
+                        animateScale: true,
+                        animateRotate: true
+                    }
+                }
+            });
+        }
+
+        function updateStatisticsPage() {
+            updateStatsChart();
+            updateComparisonChart();
+            updateContributionsChart();
+        }
+
+        function updateStatsChart() {
+            const ctx = document.getElementById('statsChart').getContext('2d');
+            
+            if (charts.statsChart) {
+                charts.statsChart.destroy();
+            }
+            
+            const labels = goals.map(goal => goal.name);
+            const currentData = goals.map(goal => convertCurrency(goal.current, goal.currency, 'RUB'));
+            const targetData = goals.map(goal => convertCurrency(goal.target, goal.currency, 'RUB'));
+            
+            charts.statsChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Накоплено',
+                            data: currentData,
+                            backgroundColor: '#667eea',
+                            borderColor: '#667eea',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Цель',
+                            data: targetData,
+                            backgroundColor: '#e0e5ec',
+                            borderColor: '#a0aec0',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateComparisonChart() {
+            const ctx = document.getElementById('comparisonChart').getContext('2d');
+            
+            if (charts.comparisonChart) {
+                charts.comparisonChart.destroy();
+            }
+            
+            const labels = goals.map(goal => goal.name);
+            const progressData = goals.map(goal => (goal.current / goal.target * 100).toFixed(1));
+            
+            charts.comparisonChart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: progressData,
+                        backgroundColor: [
+                            '#667eea', '#764ba2', '#48bb78', '#ed8936', '#f56565', '#805ad5'
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    return `${label}: ${value}%`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateContributionsChart() {
+            const ctx = document.getElementById('contributionsChart').getContext('2d');
+            
+            if (charts.contributionsChart) {
+                charts.contributionsChart.destroy();
+            }
+            
+            // Упрощенная генерация данных о взносах
+            const months = getLastSixMonths();
+            const contributions = months.map(() => Math.floor(Math.random() * 10000) + 1000);
+            
+            charts.contributionsChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: months,
+                    datasets: [{
+                        label: 'Взносы',
+                        data: contributions,
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.raw.toLocaleString()} ₽`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateCharts() {
+            if (charts.progressChart) updateMainProgressChart();
+            if (charts.statsChart) updateStatsChart();
+            if (charts.comparisonChart) updateComparisonChart();
+            if (charts.contributionsChart) updateContributionsChart();
+            if (charts.goalProgressChart && currentGoalId) {
+                const goal = goals.find(g => g.id === currentGoalId);
+                if (goal) updateGoalProgressChart(goal);
+            }
+        }
+
+        // Вспомогательные функции
+        function showApp() {
+            document.getElementById('app').classList.remove('hidden');
+            document.getElementById('pinEntryModal').style.display = 'none';
+            document.getElementById('pinSetupModal').style.display = 'none';
+            updateHomePage();
+        }
+
+        function showNotification(message, type = 'success') {
+            const container = document.createElement('div');
+            container.className = `fixed bottom-6 right-6 neumorphic p-4 rounded-xl flex items-center shadow-lg z-50 animate-fade-in`;
+            
+            let icon = 'fa-check-circle';
+            let iconColor = 'text-green-500';
+            
+            if (type === 'error') {
+                icon = 'fa-exclamation-circle';
+                iconColor = 'text-red-500';
+            } else if (type === 'warning') {
+                icon = 'fa-exclamation-triangle';
+                iconColor = 'text-yellow-500';
+            }
+            
+            container.innerHTML = `
+                <i class="fas ${icon} ${iconColor} text-xl mr-3"></i>
+                <span>${message}</span>
+            `;
+            
+            document.body.appendChild(container);
+            
+            setTimeout(() => {
+                container.classList.add('animate-fade-out');
+                setTimeout(() => container.remove(), 300);
+            }, 3000);
+        }
+
+        function checkGoalProgress(goal) {
+            const progress = (goal.current / goal.target * 100).toFixed(1);
+            
+            if (progress >= 100) {
+                showNotification(`Поздравляем! Цель "${goal.name}" достигнута! 🎉`, 'success');
+            } else if (progress >= 75) {
+                showNotification(`Вы близки к цели "${goal.name}"! Осталось всего ${100 - progress}%`, 'success');
+            }
+        }
+
+        function exportData() {
+            const data = {
+                goals: goals,
+                achievements: achievements,
+                version: '1.0',
+                exportedAt: new Date().toISOString()
+            };
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `умная_копилка_${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showNotification('Данные успешно экспортированы');
+        }
+
+        function importData() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            
+            input.onchange = e => {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                const reader = new FileReader();
+                reader.onload = event => {
+                    try {
+                        const data = JSON.parse(event.target.result);
+                        
+                        if (!data.goals || !Array.isArray(data.goals)) {
+                            throw new Error('Некорректный формат файла');
+                        }
+                        
+                        if (confirm('Заменить текущие данные импортированными? Все текущие цели и достижения будут потеряны.')) {
+                            goals = data.goals;
+                            achievements = data.achievements || [];
+                            localStorage.setItem('goals', JSON.stringify(goals));
+                            localStorage.setItem('achievements', JSON.stringify(achievements));
+                            
+                            showNotification('Данные успешно импортированы');
+                            updateHomePage();
+                            updateGoalsPage();
+                        }
+                    } catch (error) {
+                        showNotification('Ошибка при импорте данных: ' + error.message, 'error');
+                    }
+                };
+                reader.readAsText(file);
+            };
+            
+            input.click();
+        }
+
+        // Добавляем анимации в CSS
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fade-in {
+                from { opacity: 0; transform: translateY(10px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+            
+            @keyframes fade-out {
+                from { opacity: 1; transform: translateY(0); }
+                to { opacity: 0; transform: translateY(-10px); }
+            }
+            
+            .animate-fade-in {
+                animation: fade-in 0.3s ease-out forwards;
+            }
+            
+            .animate-fade-out {
+                animation: fade-out 0.3s ease-in forwards;
+            }
+        `;
+        document.head.appendChild(style);
     </script>
 </body>
 </html>
